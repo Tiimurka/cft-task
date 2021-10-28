@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 # vim:fileencoding=utf-8
 
+
 import mysql.connector
 
 conn = mysql.connector.connect(
@@ -12,7 +13,7 @@ conn = mysql.connector.connect(
 		 
 cur = conn.cursor()
 
-cur.execute('DROP TABLE IF EXISTS cft.records;')
+"""cur.execute('DROP TABLE IF EXISTS cft.records;')
 cur.execute('DROP TABLE IF EXISTS cft.accounts;')
 cur.execute('DROP TABLE IF EXISTS cft.products;')
 cur.execute('DROP TABLE IF EXISTS cft.product_type;')
@@ -78,6 +79,17 @@ cur.execute('INSERT records VALUES (12, 0, 120000, 3, str_to_date(\'08 09 2017\'
 cur.execute('INSERT records VALUES (13, 1, 1000, 3, str_to_date(\'05 10 2017\',\'%d %m %Y\'));')
 cur.execute('INSERT records VALUES (14, 1, 2000, 3, str_to_date(\'21 10 2017\',\'%d %m %Y\'));')
 cur.execute('INSERT records VALUES (15, 1, 5000, 3, str_to_date(\'24 10 2017\',\'%d %m %Y\'));')
+
+cur.execute('INSERT products VALUES (4, 2, \'Депозитный договор с Сидоровым И.П.\', 1, str_to_date(\'01 08 2017\',\'%d %m %Y\'), null);')
+cur.execute('INSERT accounts VALUES (4, \'Депозитный счет для Сидорова И.П.\', 0, 1, str_to_date(\'01 08 2017\',\'%d %m %Y\'), null, 4, \'40817810700000000002\');')"""
+
+print('все депозитные счета, принадлежащие клиентам без кредитов')
+cur.execute('select * from accounts where product_ref in (select id from products where product_type_id = 2) and client_ref in (select client_ref from products where client_ref not in (select client_ref from products where product_type_id = 1));')
+
+rows = cur.fetchall()
+
+for row in rows:
+    print "%d u'%s' %d %d %s %s %d u'%s'"% row
 
 conn.commit()
 cur.close()
