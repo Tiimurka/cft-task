@@ -5,6 +5,16 @@
 
 import mysql.connector
 
+#
+
+
+def task6(date):
+    cur.execute('select * from clients where id in (select client_ref from accounts where id in (select acc_ref from records where oper_date between date_sub(str_to_date(\''+date+'\', \'%d %m %Y\'),interval 1 month) and str_to_date(\''+date+'\', \'%d %m %Y\')));')
+    res = cur.fetchall()
+    for row in res:
+        print "%d u'%s %s' %s u'%s %s'"% row
+
+
 conn = mysql.connector.connect(
          user='tiimurka',
          password='***',
@@ -85,11 +95,12 @@ cur.execute('INSERT accounts VALUES (4, \'Депозитный счет для �
 
 print('все депозитные счета, принадлежащие клиентам без кредитов')
 cur.execute('select * from accounts where product_ref in (select id from products where product_type_id = 2) and client_ref in (select client_ref from products where client_ref not in (select client_ref from products where product_type_id = 1));')
-
 rows = cur.fetchall()
-
 for row in rows:
     print "%d u'%s' %d %d %s %s %d u'%s'"% row
+
+print('клиенты с операциями по счетам за прошедший месяц от 01 10 2015')
+task6('01 10 2015')
 
 conn.commit()
 cur.close()
