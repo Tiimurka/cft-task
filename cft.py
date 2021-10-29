@@ -4,16 +4,32 @@
 
 
 import mysql.connector
+import string
 
-#
+#select * from records where oper_date = str_to_date('2017 09 21', '%Y %m %d');
+#select id from accounts where id in (select id from products where product_type_id = 2);
 
+#select avg(sum) from records where oper_date = str_to_date('2017 09 21', '%Y %m %d')
+# and acc_ref in (select id from accounts where id in (select id from products where product_type_id = 2));
 
+def task5(date):
+    cur.execute('select * from product_type;')
+    types = cur.fetchall()
+    for type in types:
+        cur.execute('select avg(sum) from records where oper_date = str_to_date(\''+date+'\', \'%d %m %Y\') and acc_ref in (select id from accounts where id in (select id from products where product_type_id = \''+str(type[0])+'\'));')
+        avg = cur.fetchone()
+        #print "%s" % avg
+        if avg[0] != None:
+            str1 = "Среднее движение по счетам за дату".decode("utf8")
+            str2 = "по типу продукта".decode("utf8")
+            str3 = "составляет".decode("utf8")
+            print (str1+" %s " % date +str2+  " %s" % type[1]+str3+ " %s "% avg[0])
+		
 def task6(date):
     cur.execute('select * from clients where id in (select client_ref from accounts where id in (select acc_ref from records where oper_date between date_sub(str_to_date(\''+date+'\', \'%d %m %Y\'),interval 1 month) and str_to_date(\''+date+'\', \'%d %m %Y\')));')
     res = cur.fetchall()
     for row in res:
         print "%d u'%s %s' %s u'%s %s'"% row
-
 
 conn = mysql.connector.connect(
          user='tiimurka',
@@ -72,6 +88,9 @@ cur.execute('INSERT accounts VALUES (1, \'Кредитный счет для С�
 cur.execute('INSERT accounts VALUES (2, \'Депозитный счет для Иванова П.С.\', 6000, 2, str_to_date(\'01 08 2017\',\'%d %m %Y\'), null, 2, \'42301810400000000001\');')
 cur.execute('INSERT accounts VALUES (3, \'Карточный счет для Петрова С.И.\', 8000, 3, str_to_date(\'01 08 2017\',\'%d %m %Y\'), null, 3, \'40817810700000000001\');')
 
+cur.execute('INSERT products VALUES (4, 2, \'Депозитный договор с Сидоровым И.П.\', 1, str_to_date(\'01 08 2017\',\'%d %m %Y\'), null);')
+cur.execute('INSERT accounts VALUES (4, \'Депозитный счет для Сидорова И.П.\', 0, 1, str_to_date(\'01 08 2017\',\'%d %m %Y\'), null, 4, \'40817810700000000002\');')
+
 cur.execute('INSERT records VALUES (1, 1, 5000, 1, str_to_date(\'01 06 2015\',\'%d %m %Y\'));')
 cur.execute('INSERT records VALUES (2, 0, 1000, 1, str_to_date(\'01 07 2015\',\'%d %m %Y\'));')
 cur.execute('INSERT records VALUES (3, 0, 2000, 1, str_to_date(\'01 08 2015\',\'%d %m %Y\'));')
@@ -80,28 +99,31 @@ cur.execute('INSERT records VALUES (5, 1, 5000, 1, str_to_date(\'01 10 2015\',\'
 cur.execute('INSERT records VALUES (6, 0, 3000, 1, str_to_date(\'01 10 2015\',\'%d %m %Y\'));')
 
 cur.execute('INSERT records VALUES (7, 0, 10000, 2, str_to_date(\'01 08 2017\',\'%d %m %Y\'));')
-cur.execute('INSERT records VALUES (8, 1, 1000, 2, str_to_date(\'05 08 2017\',\'%d %m %Y\'));')
-cur.execute('INSERT records VALUES (9, 1, 2000, 2, str_to_date(\'21 09 2017\',\'%d %m %Y\'));')
-cur.execute('INSERT records VALUES (10, 1, 5000, 2, str_to_date(\'24 10 2017\',\'%d %m %Y\'));')
-cur.execute('INSERT records VALUES (11, 0, 6000, 2, str_to_date(\'26 11 2017\',\'%d %m %Y\'));')
+cur.execute('INSERT records VALUES (8, 0, 3000, 4, str_to_date(\'01 08 2017\',\'%d %m %Y\'));')
+cur.execute('INSERT records VALUES (9, 1, 1000, 2, str_to_date(\'05 08 2017\',\'%d %m %Y\'));')
+cur.execute('INSERT records VALUES (10, 1, 1500, 4, str_to_date(\'05 08 2017\',\'%d %m %Y\'));')
+cur.execute('INSERT records VALUES (11, 1, 2000, 2, str_to_date(\'21 09 2017\',\'%d %m %Y\'));')
+cur.execute('INSERT records VALUES (12, 0, 7000, 4, str_to_date(\'21 09 2017\',\'%d %m %Y\'));')
+cur.execute('INSERT records VALUES (13, 0, 100, 3, str_to_date(\'21 09 2017\',\'%d %m %Y\'));')
+cur.execute('INSERT records VALUES (14, 1, 5000, 2, str_to_date(\'24 10 2017\',\'%d %m %Y\'));')
+cur.execute('INSERT records VALUES (15, 0, 6000, 2, str_to_date(\'26 11 2017\',\'%d %m %Y\'));')
 
-cur.execute('INSERT records VALUES (12, 0, 120000, 3, str_to_date(\'08 09 2017\',\'%d %m %Y\'));')
-cur.execute('INSERT records VALUES (13, 1, 1000, 3, str_to_date(\'05 10 2017\',\'%d %m %Y\'));')
-cur.execute('INSERT records VALUES (14, 1, 2000, 3, str_to_date(\'21 10 2017\',\'%d %m %Y\'));')
-cur.execute('INSERT records VALUES (15, 1, 5000, 3, str_to_date(\'24 10 2017\',\'%d %m %Y\'));')
+cur.execute('INSERT records VALUES (16, 0, 120000, 3, str_to_date(\'08 09 2017\',\'%d %m %Y\'));')
+cur.execute('INSERT records VALUES (17, 1, 1000, 3, str_to_date(\'05 10 2017\',\'%d %m %Y\'));')
+cur.execute('INSERT records VALUES (18, 1, 2000, 3, str_to_date(\'21 10 2017\',\'%d %m %Y\'));')
+cur.execute('INSERT records VALUES (19, 1, 5000, 3, str_to_date(\'24 10 2017\',\'%d %m %Y\'));')"""
 
-cur.execute('INSERT products VALUES (4, 2, \'Депозитный договор с Сидоровым И.П.\', 1, str_to_date(\'01 08 2017\',\'%d %m %Y\'), null);')
-cur.execute('INSERT accounts VALUES (4, \'Депозитный счет для Сидорова И.П.\', 0, 1, str_to_date(\'01 08 2017\',\'%d %m %Y\'), null, 4, \'40817810700000000002\');')"""
 
-print('все депозитные счета, принадлежащие клиентам без кредитов')
+
+"""print('все депозитные счета, принадлежащие клиентам без кредитов')
 cur.execute('select * from accounts where product_ref in (select id from products where product_type_id = 2) and client_ref in (select client_ref from products where client_ref not in (select client_ref from products where product_type_id = 1));')
 rows = cur.fetchall()
 for row in rows:
     print "%d u'%s' %d %d %s %s %d u'%s'"% row
 
 print('клиенты с операциями по счетам за прошедший месяц от 01 10 2015')
-task6('01 10 2015')
-
+task6('01 10 2015')"""
+task5('21 09 2017')
 conn.commit()
 cur.close()
 conn.close()
