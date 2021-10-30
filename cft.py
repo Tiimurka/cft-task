@@ -30,6 +30,24 @@ def task6(date):
     res = cur.fetchall()
     for row in res:
         print "%d u'%s %s' %s u'%s %s'"% row
+		
+def task7():
+    cur.execute('select * from accounts;')
+    accs = cur.fetchall()
+    for acc in accs:
+        cur.execute('select sum(sum) from records where acc_ref = \''+str(acc[0])+'\';')
+        s = cur.fetchone()
+        #print "sum: %s" % s
+        #print "acc: %s" % acc[2]
+        if float(s[0]) != float(acc[2]):
+            cur.execute('update accounts set saldo = '+str(s[0])+' where id = '+str(acc[0])+';')
+            print 'У счета по номером %d остаток не соответсвует истории взаимодействий. Значение изменено.' % acc[0]
+
+def task8():
+    cur.execute('select * from clients where id in (select client_ref from products where close_date >= curdate() or close_date is NULL and product_type_id = 1 and id in (select product_ref from accounts where saldo >= 0));')
+    clients = cur.fetchall()
+    for cli in clients:
+        print "%d u'%s %s' %s u'%s %s'"% cli
 
 conn = mysql.connector.connect(
          user='tiimurka',
@@ -122,8 +140,11 @@ for row in rows:
     print "%d u'%s' %d %d %s %s %d u'%s'"% row
 
 print('клиенты с операциями по счетам за прошедший месяц от 01 10 2015')
-task6('01 10 2015')"""
+task6('01 10 2015')
 task5('21 09 2017')
+task7()"""
+print('Клиенты, которые погасили кредит, но не закрыли продукт:')
+task8()
 conn.commit()
 cur.close()
 conn.close()
