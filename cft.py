@@ -49,11 +49,17 @@ def task8():
     for cli in clients:
         print "%d u'%s %s' %s u'%s %s'"% cli
 
-#select id from products where id in (select product_ref from accounts where saldo >= 0) and product_type_id = 1;
-
 def task9():
     cur.execute('update products set close_date = curdate() where id in (select product_ref from accounts where saldo >= 0) and product_type_id = 1')
     print('Погашенные кредиты закрыты')
+
+#select max(oper_date) from records where acc_ref in (select id from accounts where product_ref in (select id from products where product_type_id = 2));
+#select * from records where (oper_date >= (curdate() - interval 1 month));
+#select product_type_id from products where id in (select product_ref from accounts where id in (select acc_ref from records where (oper_date >= (curdate() - interval 1 month))));
+
+def task10():
+    cur.execute('update product_type set end_date = curdate() where id not in (select product_type_id from products where id in (select product_ref from accounts where id in (select acc_ref from records where (oper_date >= (curdate() - interval 1 month)))))')
+    print('Возможность закрытия для продуктов, по которым не было движения более месяца, закрыта')
 
 conn = mysql.connector.connect(
          user='tiimurka',
@@ -135,7 +141,8 @@ cur.execute('INSERT records VALUES (15, 0, 6000, 2, str_to_date(\'26 11 2017\',\
 cur.execute('INSERT records VALUES (16, 0, 120000, 3, str_to_date(\'08 09 2017\',\'%d %m %Y\'));')
 cur.execute('INSERT records VALUES (17, 1, 1000, 3, str_to_date(\'05 10 2017\',\'%d %m %Y\'));')
 cur.execute('INSERT records VALUES (18, 1, 2000, 3, str_to_date(\'21 10 2017\',\'%d %m %Y\'));')
-cur.execute('INSERT records VALUES (19, 1, 5000, 3, str_to_date(\'24 10 2017\',\'%d %m %Y\'));')"""
+cur.execute('INSERT records VALUES (19, 1, 5000, 3, str_to_date(\'24 10 2017\',\'%d %m %Y\'));')
+cur.execute('INSERT records VALUES (20, 0, 15000, 4, str_to_date(\'24 10 2021\',\'%d %m %Y\'));')"""
 
 
 
@@ -150,8 +157,9 @@ task6('01 10 2015')
 task5('21 09 2017')
 task7()
 print('Клиенты, которые погасили кредит, но не закрыли продукт:')
-task8()"""
-task9()
+task8()
+task9()"""
+task10()
 conn.commit()
 cur.close()
 conn.close()
