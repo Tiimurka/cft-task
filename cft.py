@@ -35,10 +35,10 @@ def task7():
     cur.execute('select * from accounts;')
     accs = cur.fetchall()
     for acc in accs:
-        cur.execute('select sum(sum) from records where acc_ref = \''+str(acc[0])+'\';')
+        cur.execute('select ((select sum(sum) from records where acc_ref = \''+str(acc[0])+'\' and dt = 0) - (select sum(sum) from records where acc_ref = \''+str(acc[0])+'\' and dt = 1));')
         s = cur.fetchone()
-        #print "sum: %s" % s
-        #print "acc: %s" % acc[2]
+        print "sum: %s" % s
+        print "acc: %s" % acc[2]
         if float(s[0]) != float(acc[2]):
             cur.execute('update accounts set saldo = '+str(s[0])+' where id = '+str(acc[0])+';')
             print 'У счета по номером %d остаток не соответсвует истории взаимодействий. Значение изменено.' % acc[0]
@@ -52,10 +52,6 @@ def task8():
 def task9():
     cur.execute('update products set close_date = curdate() where id in (select product_ref from accounts where saldo >= 0) and product_type_id = 1')
     print('Погашенные кредиты закрыты')
-
-#select max(oper_date) from records where acc_ref in (select id from accounts where product_ref in (select id from products where product_type_id = 2));
-#select * from records where (oper_date >= (curdate() - interval 1 month));
-#select product_type_id from products where id in (select product_ref from accounts where id in (select acc_ref from records where (oper_date >= (curdate() - interval 1 month))));
 
 def task10():
     cur.execute('update product_type set end_date = curdate() where id not in (select product_type_id from products where id in (select product_ref from accounts where id in (select acc_ref from records where (oper_date >= (curdate() - interval 1 month)))))')
@@ -158,8 +154,9 @@ task5('21 09 2017')
 task7()
 print('Клиенты, которые погасили кредит, но не закрыли продукт:')
 task8()
-task9()"""
-task10()
+task9()
+task10()"""
+
 conn.commit()
 cur.close()
 conn.close()
