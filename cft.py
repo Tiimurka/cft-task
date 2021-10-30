@@ -49,6 +49,12 @@ def task8():
     for cli in clients:
         print "%d u'%s %s' %s u'%s %s'"% cli
 
+#select id from products where id in (select product_ref from accounts where saldo >= 0) and product_type_id = 1;
+
+def task9():
+    cur.execute('update products set close_date = curdate() where id in (select product_ref from accounts where saldo >= 0) and product_type_id = 1')
+    print('Погашенные кредиты закрыты')
+
 conn = mysql.connector.connect(
          user='tiimurka',
          password='***',
@@ -142,9 +148,10 @@ for row in rows:
 print('клиенты с операциями по счетам за прошедший месяц от 01 10 2015')
 task6('01 10 2015')
 task5('21 09 2017')
-task7()"""
+task7()
 print('Клиенты, которые погасили кредит, но не закрыли продукт:')
-task8()
+task8()"""
+task9()
 conn.commit()
 cur.close()
 conn.close()
