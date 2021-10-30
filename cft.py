@@ -57,6 +57,19 @@ def task10():
     cur.execute('update product_type set end_date = curdate() where id not in (select product_type_id from products where id in (select product_ref from accounts where id in (select acc_ref from records where (oper_date >= (curdate() - interval 1 month)))))')
     print('Возможность закрытия для продуктов, по которым не было движения более месяца, закрыта')
 
+def task11():
+    cur.execute('alter table products add column SUM decimal(10) NULL;')
+    cur.execute('select * from products;')
+    products = cur.fetchall()
+    for prod in products:
+        cur.execute('select product_type_id from products where id = (select product_ref from accounts where id = '+str(prod[0])+');')
+        res = cur.fetchone()
+        #print (int(res[0]))
+        if int(res[0]) == 1:
+            cur.execute('update products set sum = (select max(sum) from records where dt = 1 and acc_ref = '+str(prod[0])+') where id = '+str(prod[0])+';')
+        else:
+            cur.execute('update products set sum = (select max(sum) from records where dt = 0 and acc_ref = '+str(prod[0])+') where id = '+str(prod[0])+';')
+
 conn = mysql.connector.connect(
          user='tiimurka',
          password='***',
@@ -65,7 +78,7 @@ conn = mysql.connector.connect(
 		 
 cur = conn.cursor()
 
-"""cur.execute('DROP TABLE IF EXISTS cft.records;')
+cur.execute('DROP TABLE IF EXISTS cft.records;')
 cur.execute('DROP TABLE IF EXISTS cft.accounts;')
 cur.execute('DROP TABLE IF EXISTS cft.products;')
 cur.execute('DROP TABLE IF EXISTS cft.product_type;')
@@ -138,7 +151,7 @@ cur.execute('INSERT records VALUES (16, 0, 120000, 3, str_to_date(\'08 09 2017\'
 cur.execute('INSERT records VALUES (17, 1, 1000, 3, str_to_date(\'05 10 2017\',\'%d %m %Y\'));')
 cur.execute('INSERT records VALUES (18, 1, 2000, 3, str_to_date(\'21 10 2017\',\'%d %m %Y\'));')
 cur.execute('INSERT records VALUES (19, 1, 5000, 3, str_to_date(\'24 10 2017\',\'%d %m %Y\'));')
-cur.execute('INSERT records VALUES (20, 0, 15000, 4, str_to_date(\'24 10 2021\',\'%d %m %Y\'));')"""
+cur.execute('INSERT records VALUES (20, 0, 15000, 4, str_to_date(\'24 10 2021\',\'%d %m %Y\'));')
 
 
 
@@ -156,7 +169,7 @@ print('Клиенты, которые погасили кредит, но не �
 task8()
 task9()
 task10()"""
-
+task11()
 conn.commit()
 cur.close()
 conn.close()
