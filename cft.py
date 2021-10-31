@@ -6,19 +6,14 @@
 import mysql.connector
 import string
 
-#select * from records where oper_date = str_to_date('2017 09 21', '%Y %m %d');
-#select id from accounts where id in (select id from products where product_type_id = 2);
-
-#select avg(sum) from records where oper_date = str_to_date('2017 09 21', '%Y %m %d')
-# and acc_ref in (select id from accounts where id in (select id from products where product_type_id = 2));
-
 def task5(date):
     cur.execute('select * from product_type;')
     types = cur.fetchall()
     for type in types:
-        cur.execute('select avg(sum) from records where oper_date = str_to_date(\''+date+'\', \'%d %m %Y\') and acc_ref in (select id from accounts where id in (select id from products where product_type_id = \''+str(type[0])+'\'));')
+        cur.execute('select avg(sum) from records where'\
+        ' oper_date = str_to_date(\''+date+'\', \'%d %m %Y\') and acc_ref in '\
+        '(select id from accounts where id in (select id from products where product_type_id = \''+str(type[0])+'\'));')
         avg = cur.fetchone()
-        #print "%s" % avg
         if avg[0] != None:
             str1 = "Среднее движение по счетам за дату".decode("utf8")
             str2 = "по типу продукта".decode("utf8")
@@ -26,7 +21,10 @@ def task5(date):
             print (str1+" %s " % date +str2+  " %s" % type[1]+str3+ " %s "% avg[0])
 		
 def task6(date):
-    cur.execute('select * from clients where id in (select client_ref from accounts where id in (select acc_ref from records where oper_date between date_sub(str_to_date(\''+date+'\', \'%d %m %Y\'),interval 1 month) and str_to_date(\''+date+'\', \'%d %m %Y\')));')
+    cur.execute('select * from clients where id in'\
+    ' (select client_ref from accounts where id in'\
+    ' (select acc_ref from records where oper_date between '\
+    'date_sub(str_to_date(\''+date+'\', \'%d %m %Y\'),interval 1 month) and str_to_date(\''+date+'\', \'%d %m %Y\')));')
     res = cur.fetchall()
     for row in res:
         print "%d u'%s %s' %s u'%s %s'"% row
@@ -35,7 +33,9 @@ def task7():
     cur.execute('select * from accounts;')
     accs = cur.fetchall()
     for acc in accs:
-        cur.execute('select ((select sum(sum) from records where acc_ref = \''+str(acc[0])+'\' and dt = 0) - (select sum(sum) from records where acc_ref = \''+str(acc[0])+'\' and dt = 1));')
+        cur.execute('select ((select sum(sum) from records where '\
+	    'acc_ref = \''+str(acc[0])+'\' and dt = 0) - (select sum(sum) from records where '\
+	    'acc_ref = \''+str(acc[0])+'\' and dt = 1));')
         s = cur.fetchone()
         print "sum: %s" % s
         print "acc: %s" % acc[2]
@@ -50,11 +50,14 @@ def task8():
         print "%d u'%s %s' %s u'%s %s'"% cli
 
 def task9():
-    cur.execute('update products set close_date = curdate() where id in (select product_ref from accounts where saldo >= 0) and product_type_id = 1')
+    cur.execute('update products set close_date = curdate() where '\
+    'id in (select product_ref from accounts where saldo >= 0) and product_type_id = 1')
     print('Погашенные кредиты закрыты')
 
 def task10():
-    cur.execute('update product_type set end_date = curdate() where id not in (select product_type_id from products where id in (select product_ref from accounts where id in (select acc_ref from records where (oper_date >= (curdate() - interval 1 month)))))')
+    cur.execute('update product_type set end_date = curdate() where '\
+    'id not in (select product_type_id from products where id in (select product_ref from accounts where '\
+    'id in (select acc_ref from records where (oper_date >= (curdate() - interval 1 month)))))')
     print('Возможность закрытия для продуктов, по которым не было движения более месяца, закрыта')
 
 def task11():
@@ -64,11 +67,12 @@ def task11():
     for prod in products:
         cur.execute('select product_type_id from products where id = (select product_ref from accounts where id = '+str(prod[0])+');')
         res = cur.fetchone()
-        #print (int(res[0]))
         if int(res[0]) == 1:
-            cur.execute('update products set sum = (select max(sum) from records where dt = 1 and acc_ref = '+str(prod[0])+') where id = '+str(prod[0])+';')
+            cur.execute('update products set sum = (select max(sum) from records where '\
+            'dt = 1 and acc_ref = '+str(prod[0])+') where id = '+str(prod[0])+';')
         else:
-            cur.execute('update products set sum = (select max(sum) from records where dt = 0 and acc_ref = '+str(prod[0])+') where id = '+str(prod[0])+';')
+            cur.execute('update products set sum = (select max(sum) from records where '\
+            'dt = 0 and acc_ref = '+str(prod[0])+') where id = '+str(prod[0])+';')
 
 conn = mysql.connector.connect(
          user='tiimurka',
@@ -154,8 +158,8 @@ cur.execute('INSERT records VALUES (19, 1, 5000, 3, str_to_date(\'24 10 2017\',\
 cur.execute('INSERT records VALUES (20, 0, 15000, 4, str_to_date(\'24 10 2021\',\'%d %m %Y\'));')
 
 
-
-"""print('все депозитные счета, принадлежащие клиентам без кредитов')
+#task4
+print('все депозитные счета, принадлежащие клиентам без кредитов')
 cur.execute('select * from accounts where product_ref in (select id from products where product_type_id = 2) and client_ref in (select client_ref from products where client_ref not in (select client_ref from products where product_type_id = 1));')
 rows = cur.fetchall()
 for row in rows:
@@ -168,7 +172,7 @@ task7()
 print('Клиенты, которые погасили кредит, но не закрыли продукт:')
 task8()
 task9()
-task10()"""
+task10()
 task11()
 conn.commit()
 cur.close()
